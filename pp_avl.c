@@ -109,11 +109,6 @@ void update_level(avl **root)
 	(*root)->level = left + 1;
 }
 
-void lr_rotation(void)
-{
-	printf("lr rotation\n");
-}
-
 void ll_rotation(avl **root)
 {
 	printf("ll rotation\n");
@@ -127,14 +122,48 @@ void ll_rotation(avl **root)
 	update_level(root);
 }
 
+void rr_rotation(avl **root)
+{
+	printf("rr rotation\n");
+
+	avl *parent = (*root)->right;
+	(*root)->right = parent->left;
+	parent->left = *root;
+	update_level(root);
+
+	(*root) = parent;
+	update_level(root);
+}
+
+void lr_rotation(avl **root)
+{
+	avl *parent = (*root)->left;
+
+	if (parent->right->left)
+	{
+		(*root)->left = parent->right;
+		parent->right = parent->right->left;
+		(*root)->left->left = parent;
+
+		(*root)->left->right = (*root);
+		*root = (*root)->left;
+		(*root)->right->left = NULL;
+
+		update_level(&(*root)->right);
+		update_level(&(*root)->left);
+		update_level(root);
+	}
+	else if (parent->right->right)
+	{
+	}
+	//printf("root->data = %d\n", (*root)->data);
+	//printf("uncle->data = %d\n", uncle->data);
+	printf("lr rotation\n");
+}
+
 void rl_rotation(void)
 {
 	printf("rl rotation\n");
-}
-
-void rr_rotation(void)
-{
-	printf("rr rotation\n");
 }
 
 void rotation(int factor, avl **root, int data)
@@ -144,10 +173,9 @@ void rotation(int factor, avl **root, int data)
 	switch (factor)
 	{
 		case LEFT:
-			// FIX
 			if ((*root)->left->data < data)
 			{
-				lr_rotation();
+				lr_rotation(root);
 			}
 			else
 			{
@@ -157,14 +185,13 @@ void rotation(int factor, avl **root, int data)
 			break;
 
 		case RIGHT:
-			// CHECK
 			if ((*root)->right->data > data)
 			{
 				rl_rotation();
 			}
 			else
 			{
-				rr_rotation();
+				rr_rotation(root);
 			}
 
 			break;
@@ -250,11 +277,11 @@ int main(void)
 
 	int i;
 	// test for LR
-	//int data[6] = { 12, 20, 7, 10, 3, 8 };
+	int data[6] = { 12, 20, 7, 10, 3, 8 };
 	// test for LL
-	int data[6] = { 12, 20, 7, 10, 3, 2 };
+	//int data[6] = { 12, 20, 7, 10, 3, 2 };
 	// test for RR
-	// int data[6] = { 12, 7, 20, 15, 24, 28 };
+	//int data[6] = { 12, 7, 20, 15, 24, 28 };
 	// test for RL
 	// int data[6] = { 12, 7, 20, 25, 15, 13 };
 #if 0
