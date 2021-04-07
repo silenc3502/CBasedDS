@@ -76,6 +76,7 @@ avl *create_avl_node(void)
 	return tmp;
 }
 
+#if 0
 int calc_level(avl **root)
 {
 	int left, right;
@@ -90,15 +91,40 @@ int calc_level(avl **root)
 
 	return left + 1;
 }
+#endif
+
+void update_level(avl **root)
+{
+	int left, right;
+
+	right = (*root)->right ? (*root)->right->level : 0;
+	left = (*root)->left ? (*root)->left->level : 0;
+
+	if (right > left)
+	{
+		(*root)->level = right + 1;
+		return;
+	}
+
+	(*root)->level = left + 1;
+}
 
 void lr_rotation(void)
 {
 	printf("lr rotation\n");
 }
 
-void ll_rotation(void)
+void ll_rotation(avl **root)
 {
 	printf("ll rotation\n");
+
+	avl *parent = (*root)->left;
+	(*root)->left = parent->right;
+	parent->right = *root;
+	update_level(root);
+
+	(*root) = parent;
+	update_level(root);
 }
 
 void rl_rotation(void)
@@ -125,7 +151,7 @@ void rotation(int factor, avl **root, int data)
 			}
 			else
 			{
-				ll_rotation();
+				ll_rotation(root);
 			}
 
 			break;
@@ -178,7 +204,8 @@ void insert_avl(avl **root, int data)
 		insert_avl(&(*root)->right, data);
 	}
 
-	(*root)->level = calc_level(root);
+	//(*root)->level = calc_level(root);
+	update_level(root);
 
 	adjust_balance(root, data);
 }
@@ -223,9 +250,9 @@ int main(void)
 
 	int i;
 	// test for LR
-	int data[6] = { 12, 20, 7, 10, 3, 8 };
+	//int data[6] = { 12, 20, 7, 10, 3, 8 };
 	// test for LL
-	// int data[6] = { 12, 20, 7, 10, 3, 2 };
+	int data[6] = { 12, 20, 7, 10, 3, 2 };
 	// test for RR
 	// int data[6] = { 12, 7, 20, 15, 24, 28 };
 	// test for RL
