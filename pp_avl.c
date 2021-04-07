@@ -223,13 +223,13 @@ int main(void)
 
 	int i;
 	// test for LR
-	// int data[6] = { 12, 20, 7, 10, 3, 8 };
+	int data[6] = { 12, 20, 7, 10, 3, 8 };
 	// test for LL
 	// int data[6] = { 12, 20, 7, 10, 3, 2 };
 	// test for RR
 	// int data[6] = { 12, 7, 20, 15, 24, 28 };
 	// test for RL
-	int data[6] = { 12, 7, 20, 25, 15, 13 };
+	// int data[6] = { 12, 7, 20, 25, 15, 13 };
 #if 0
 	int data[31] = { 0 };
 
