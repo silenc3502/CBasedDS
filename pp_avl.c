@@ -10,70 +10,75 @@ typedef struct _avl avl;
 
 struct _avl
 {
-	int data;
-	avl *left;
-	avl *right;
-	int level;
+    int data;
+    avl *left;
+    avl *right;
+    int level;
 };
 
 bool check_dup(int *data, int compare, int idx)
 {
-	int i;
+    int i;
 
-	for (i = 0; i < idx; i++)
-	{
-		if (data[i] == compare)
-		{
-			return true;
-		}
-	}
+    for (i = 0; i < idx; i++)
+    {
+        if (data[i] == compare)
+        {
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
 
 void init_data(int *data, int num)
 {
-	int i, tmp;
+    int i, tmp;
 
-	for (i = 0; i < num; i++)
-	{
-reassign:
-		tmp = rand() % 31 + 1;
+    for (i = 0; i < num; i++)
+    {
+        reassign:
+        tmp = rand() % num + 1;
 
-		if (check_dup(data, tmp, i))
-		{
-			goto reassign;
-		}
+        if (check_dup(data, tmp, i))
+        {
+            goto reassign;
+        }
 
-		data[i] = tmp;
-	}
+        data[i] = tmp;
+    }
 }
 
 void print_arr(int *data, int num)
 {
-	int i;
+    int i;
 
-	for (i = 0; i < num; i++)
-	{
-		printf("%3d", data[i]);
+    for (i = 0; i < num; i++)
+    {
+        printf("%4d", data[i]);
 
-		if (i % 7 == 6)
-		{
-			printf("\n");
-		}
-	}
+        if (i % 7 == 6)
+        {
+            printf("\n");
+        }
+    }
 
-	printf("\n");
+    printf("\n");
 }
 
 avl *create_avl_node(void)
 {
-	avl *tmp = (avl *)malloc(sizeof(avl));
+    avl *tmp = (avl *)malloc(sizeof(avl));
 
-	tmp->left = NULL;
-	tmp->right = NULL;
+    if (!tmp)
+    {
+        printf("Failed malloc\n");
+    }
 
-	return tmp;
+    tmp->left = NULL;
+    tmp->right = NULL;
+
+    return tmp;
 }
 
 #if 0
@@ -95,210 +100,277 @@ int calc_level(avl **root)
 
 void update_level(avl **root)
 {
-	int left, right;
+    int left, right;
 
-	right = (*root)->right ? (*root)->right->level : 0;
-	left = (*root)->left ? (*root)->left->level : 0;
+    right = (*root)->right ? (*root)->right->level : 0;
+    left = (*root)->left ? (*root)->left->level : 0;
 
-	if (right > left)
-	{
-		(*root)->level = right + 1;
-		return;
-	}
+    if (right > left)
+    {
+        (*root)->level = right + 1;
+        return;
+    }
 
-	(*root)->level = left + 1;
+    (*root)->level = left + 1;
 }
 
 void ll_rotation(avl **root)
 {
-	printf("ll rotation\n");
+    printf("ll rotation\n");
 
-	avl *parent = (*root)->left;
-	(*root)->left = parent->right;
-	parent->right = *root;
-	update_level(root);
+    avl *parent = (*root)->left;
+    (*root)->left = parent->right;
+    parent->right = *root;
+    update_level(root);
 
-	(*root) = parent;
-	update_level(root);
+    (*root) = parent;
+    update_level(root);
 }
 
 void rr_rotation(avl **root)
 {
-	printf("rr rotation\n");
+    printf("rr rotation\n");
 
-	avl *parent = (*root)->right;
-	(*root)->right = parent->left;
-	parent->left = *root;
-	update_level(root);
+    avl *parent = (*root)->right;
+    (*root)->right = parent->left;
+    parent->left = *root;
+    update_level(root);
 
-	(*root) = parent;
-	update_level(root);
+    (*root) = parent;
+    update_level(root);
 }
 
 void lr_rotation(avl **root)
 {
-	avl *parent = (*root)->left;
+    avl *parent = (*root)->left;
 
-	if (parent->right->left)
-	{
-		(*root)->left = parent->right;
-		parent->right = parent->right->left;
-		(*root)->left->left = parent;
+    if (parent->right->left)
+    {
+        parent->right->right = *root;
+        *root = parent->right;
+        parent->right = parent->right->left;
 
-		(*root)->left->right = (*root);
-		*root = (*root)->left;
-		(*root)->right->left = NULL;
+        (*root)->left = parent;
+        (*root)->right->left = NULL;
 
-		update_level(&(*root)->right);
-		update_level(&(*root)->left);
-		update_level(root);
-	}
-	else if (parent->right->right)
-	{
-	}
-	//printf("root->data = %d\n", (*root)->data);
-	//printf("uncle->data = %d\n", uncle->data);
-	printf("lr rotation\n");
+        /*
+        (*root)->left = parent->right;
+        parent->right = parent->right->left;
+        (*root)->left->left = parent;
+
+        (*root)->left->right = (*root);
+        *root = (*root)->left;
+        (*root)->right->left = NULL;
+         */
+
+        update_level(&(*root)->right);
+        update_level(&(*root)->left);
+        update_level(root);
+    }
+    else if (parent->right->right)
+    {
+        (*root)->left = parent->right->right;
+        parent->right->right = *root;
+        (*root) = parent->right;
+
+        (*root)->left = parent;
+        (*root)->left->right = NULL;
+
+        update_level(&(*root)->right);
+        update_level(&(*root)->left);
+        update_level(root);
+    }
+    else
+    {
+        printf("Here is the problem!\n");
+    }
+    //printf("root->data = %d\n", (*root)->data);
+    //printf("uncle->data = %d\n", uncle->data);
+    printf("lr rotation\n");
 }
 
-void rl_rotation(void)
+void rl_rotation(avl **root)
 {
-	printf("rl rotation\n");
+    avl *parent = (*root)->right;
+
+    if (parent->left->left)
+    {
+        (*root)->right = parent->left->left;
+        parent->left->left = *root;
+        *root = parent->left;
+
+        (*root)->right = parent;
+        parent->left = NULL;
+
+        update_level(&(*root)->right);
+        update_level(&(*root)->left);
+        update_level(root);
+    }
+    else if (parent->left->right)
+    {
+        /*
+        parent->right->right = *root;
+        *root = parent->right;
+        parent->right = parent->right->left;
+
+        (*root)->left = parent;
+        (*root)->right->left = NULL;
+        */
+
+        parent->left->left = *root;
+        *root = parent->left;
+        parent->left = parent->left->right;
+
+        (*root)->right = parent;
+        (*root)->left->right = NULL;
+
+        update_level(&(*root)->right);
+        update_level(&(*root)->left);
+        update_level(root);
+    }
+
+    printf("rl rotation\n");
 }
 
 void rotation(int factor, avl **root, int data)
 {
-	printf("balance factor = %3d\tnode data = %3d\t in data = %3d\n", factor, (*root)->data, data);
+    printf("balance factor = %3d\tnode data = %3d\t in data = %3d\n", factor, (*root)->data, data);
 
-	switch (factor)
-	{
-		case LEFT:
-			if ((*root)->left->data < data)
-			{
-				lr_rotation(root);
-			}
-			else
-			{
-				ll_rotation(root);
-			}
+    switch (factor)
+    {
+        case LEFT:
+            if ((*root)->left->data < data)
+            {
+                lr_rotation(root);
+            }
+            else
+            {
+                ll_rotation(root);
+            }
 
-			break;
+            break;
 
-		case RIGHT:
-			if ((*root)->right->data > data)
-			{
-				rl_rotation();
-			}
-			else
-			{
-				rr_rotation(root);
-			}
+        case RIGHT:
+            if ((*root)->right->data > data)
+            {
+                rl_rotation(root);
+            }
+            else
+            {
+                rr_rotation(root);
+            }
 
-			break;
-	}
+            break;
+    }
 }
 
 void adjust_balance(avl **root, int data)
 {
-	int left, right, balance_factor;
+    int left, right, balance_factor;
 
-	left = (*root)->left ? (*root)->left->level : 0;
-	right = (*root)->right ? (*root)->right->level : 0;
+    left = (*root)->left ? (*root)->left->level : 0;
+    right = (*root)->right ? (*root)->right->level : 0;
 
-	balance_factor = right - left;
-	if (abs(balance_factor) > 1)
-	{
-		printf("Rotation Occurrence\n");
-		rotation(balance_factor, root, data);
-	}
+    balance_factor = right - left;
+    if (abs(balance_factor) > 1)
+    {
+        printf("Rotation Occurrence\n");
+        rotation(balance_factor, root, data);
+    }
 }
 
 void insert_avl(avl **root, int data)
 {
-	if (!(*root))
-	{
-		*root = create_avl_node();
-		(*root)->data = data;
-		(*root)->level = 1;
-	}
+    if (!(*root))
+    {
+        *root = create_avl_node();
+        (*root)->data = data;
+        (*root)->level = 1;
+    }
 
-	if ((*root)->data > data)
-	{
-		insert_avl(&(*root)->left, data);
-	}
-	else if ((*root)->data < data)
-	{
-		insert_avl(&(*root)->right, data);
-	}
+    if ((*root)->data > data)
+    {
+        insert_avl(&(*root)->left, data);
+    }
+    else if ((*root)->data < data)
+    {
+        insert_avl(&(*root)->right, data);
+    }
 
-	//(*root)->level = calc_level(root);
-	update_level(root);
+    //(*root)->level = calc_level(root);
+    update_level(root);
 
-	adjust_balance(root, data);
+    adjust_balance(root, data);
 }
 
 void print_avl(avl *tree)
 {
-	avl *tmp = tree;
+    avl *tmp = tree;
 
-	if (tmp)
-	{
-		print_avl(tmp->left);
+    if (tmp)
+    {
+        print_avl(tmp->left);
 
-		printf("data = %3d\t", tmp->data);
+        printf("data = %4d\t", tmp->data);
 
-		if (tmp->left)
-		{
-			printf("left = %3d\t", tmp->left->data);
-		}
-		else
-		{
-			printf("left = NULL\t");
-		}
+        if (tmp->left)
+        {
+            printf("left = %4d\t", tmp->left->data);
+        }
+        else
+        {
+            printf("left = NULL\t");
+        }
 
-		if (tmp->right)
-		{
-			printf("right = %3d\t", tmp->right->data);
-		}
-		else
-		{
-			printf("right = NULL\t");
-		}
+        if (tmp->right)
+        {
+            printf("right = %4d\t", tmp->right->data);
+        }
+        else
+        {
+            printf("right = NULL\t");
+        }
 
-		printf("level = %2d\n", tmp->level);
+        printf("level = %2d\n", tmp->level);
 
-		print_avl(tmp->right);
-	}
+        print_avl(tmp->right);
+    }
 }
 
 int main(void)
 {
-	avl *root = NULL;
+    avl *root = NULL;
 
-	int i;
-	// test for LR
-	int data[6] = { 12, 20, 7, 10, 3, 8 };
-	// test for LL
-	//int data[6] = { 12, 20, 7, 10, 3, 2 };
-	// test for RR
-	//int data[6] = { 12, 7, 20, 15, 24, 28 };
-	// test for RL
-	// int data[6] = { 12, 7, 20, 25, 15, 13 };
+    int i;
 #if 0
-	int data[31] = { 0 };
+    // test for LR -> final less
+    //int data[6] = { 12, 20, 7, 10, 3, 8 };
+    // test for LR -> final big
+    //int data[6] = { 12, 20, 7, 10, 3, 11 };
+    // test for LL
+    //int data[6] = { 12, 20, 7, 10, 3, 2 };
+    // test for RR
+    //int data[6] = { 12, 7, 20, 15, 24, 28 };
+    // test for RL -> final less
+    //int data[6] = { 12, 7, 20, 25, 15, 13 };
+    // test for RL -> final big
+    //int data[6] = { 12, 7, 20, 25, 15, 17 };
+#else
+    int data[63] = { 0 };
+    int len = sizeof(data) / sizeof(int);
 
 	srand(time(NULL));
 
-	init_data(data, 31);
-	print_arr(data, 31);
+	init_data(data, len);
+	print_arr(data, len);
 #endif
 
-	for (i = 0; i < sizeof(data) / sizeof(int); i++)
-	{
-		insert_avl(&root, data[i]);
-	}
+    for (i = 0; i < len; i++)
+    {
+        insert_avl(&root, data[i]);
+    }
 
-	print_avl(root);
+    print_avl(root);
 
-	return 0;
+    return 0;
 }
