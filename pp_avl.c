@@ -119,6 +119,7 @@ void ll_rotation(avl **root)
     printf("ll rotation\n");
 
     avl *parent = (*root)->left;
+
     (*root)->left = parent->right;
     parent->right = *root;
     update_level(root);
@@ -132,6 +133,7 @@ void rr_rotation(avl **root)
     printf("rr rotation\n");
 
     avl *parent = (*root)->right;
+
     (*root)->right = parent->left;
     parent->left = *root;
     update_level(root);
@@ -143,6 +145,8 @@ void rr_rotation(avl **root)
 void lr_rotation(avl **root)
 {
     avl *parent = (*root)->left;
+
+    printf("root = %4d\tparent = %4d\n", (*root)->data, parent->data);
 
     if (parent->right->left)
     {
@@ -182,7 +186,17 @@ void lr_rotation(avl **root)
     }
     else
     {
-        printf("Here is the problem!\n");
+        printf("LR Here is the problem!\n");
+        parent->right->left = parent;
+        parent->right->right = *root;
+        *root = parent->right;
+
+        parent->right = NULL;
+        (*root)->right->left = NULL;
+
+        update_level(&(*root)->right);
+        update_level(&(*root)->left);
+        update_level(root);
     }
     //printf("root->data = %d\n", (*root)->data);
     //printf("uncle->data = %d\n", uncle->data);
@@ -192,6 +206,8 @@ void lr_rotation(avl **root)
 void rl_rotation(avl **root)
 {
     avl *parent = (*root)->right;
+
+    printf("root = %4d\tparent = %4d\n", (*root)->data, parent->data);
 
     if (parent->left->left)
     {
@@ -222,6 +238,20 @@ void rl_rotation(avl **root)
         parent->left = parent->left->right;
 
         (*root)->right = parent;
+        (*root)->left->right = NULL;
+
+        update_level(&(*root)->right);
+        update_level(&(*root)->left);
+        update_level(root);
+    }
+    else
+    {
+        printf("RL Here is the problem!\n");
+        parent->left->right = parent;
+        parent->left->left = *root;
+        *root = parent->left;
+
+        parent->left = NULL;
         (*root)->left->right = NULL;
 
         update_level(&(*root)->right);
@@ -343,6 +373,8 @@ int main(void)
 
     int i;
 #if 0
+    // test for LL
+    int data[3] = { 3, 2, 1 };
     // test for LR -> final less
     //int data[6] = { 12, 20, 7, 10, 3, 8 };
     // test for LR -> final big
@@ -355,8 +387,10 @@ int main(void)
     //int data[6] = { 12, 7, 20, 25, 15, 13 };
     // test for RL -> final big
     //int data[6] = { 12, 7, 20, 25, 15, 17 };
+
+    int len = sizeof(data) / sizeof(int);
 #else
-    int data[63] = { 0 };
+    int data[511] = { 0 };
     int len = sizeof(data) / sizeof(int);
 
 	srand(time(NULL));
