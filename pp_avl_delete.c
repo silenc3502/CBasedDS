@@ -259,6 +259,55 @@ avl *avl_find( avl *tree, int data ) {
     return current;
 }
 
+avl *chg_node(avl *root)
+{
+	avl *tmp = root;
+
+	if(!root->right)
+		root = root->left;
+	else if(!root->left)
+		root = root->right;
+
+	free(tmp);
+
+	return root;
+}
+
+avl *find_max(avl *root, int *data)
+{
+	if(root->right)
+		root->right = find_max(root->right, data);
+	else
+	{
+		*data = root->data;
+		root = chg_node(root);
+	}
+
+	return root;
+}
+
+void avl_del(avl **root, int data)
+{
+	if(*root == NULL)
+	{
+		printf("There are no data that you find %d\n", data);
+		return;
+	}
+	else if((*root)->data > data)
+		avl_del(&(*root)->left, data);
+	else if((*root)->data < data)
+		avl_del(&(*root)->right, data);
+	else if((*root)->left && (*root)->right)
+		(*root)->left = find_max((*root)->left, &(*root)->data);
+	else
+	{
+		*root = chg_node(*root);
+		return;
+	}
+
+    avl_balance(root);
+}
+
 void print_avl(avl *tree)
 {
     avl *tmp = tree;
@@ -294,19 +343,43 @@ void print_avl(avl *tree)
 }
 
 int main( int argc, char **argv ) {
-    avl *tree = NULL;
-    int i = 0;
-    int data[31] = { 0 };
+    avl *root = NULL;
+    int i = 0, num_cnt = 0;
+    int data[2047] = { 0 };
     int len = sizeof(data) / sizeof(int);
+
+	srand(time(NULL));
 
     init_data(data, len);
     print_arr(data, len);
 
     for( i = 0; i < len; i++ ) {
-        avl_insert( &tree, data[i] );
+        avl_insert( &root, data[i] );
     }
 
-    print_avl(tree);
+    print_avl(root);
+
+	printf("\nAfter Delete\n");
+	printf("Delete Num:\n");
+
+	for (i = 0; i < len; i += 3)
+	{
+		printf("%5d", data[i]);
+		avl_del(&root, data[i]);
+		num_cnt++;
+
+		if (i % 21 == 18)
+		{
+			printf("\n");
+		}
+	}
+	printf("\n");
+
+	cnt = 0;
+
+    print_avl(root);
+	printf("num_cnt = %d\n", num_cnt);
+	printf("len - num_cnt = %d\n", len - num_cnt);
 
     return 0;
 }
