@@ -341,7 +341,7 @@ void print_avl(avl_node_t *tree)
 int main( int argc, char **argv ) {
     avl_tree_t *tree = NULL;
     int i = 0;
-    int data[511] = { 0 };
+    int data[2047] = { 0 };
     int len = sizeof(data) / sizeof(int);
 
     init_data(data, len);
